@@ -37,6 +37,15 @@ import TcpSocket from 'react-native-tcp-socket';
 
 const hareketler = ['Depo', 'Müşteri', 'Fuar'];
 
+const hareketlersayisyeri = [
+  'Trendyol',
+  'Amazon',
+  'Casadora',
+  'Miela',
+  'Küçüker',
+  'Diğer',
+];
+
 const PlaygroundNavigate = () => {
   let navigation = useNavigation();
 
@@ -61,8 +70,10 @@ class HomeScreen extends Component {
       tableData: AuthStore.barcoded,
       overlaystatus: false,
       overlaysiparisstatus: false,
+      overlaysatisyeristatus: false,
       hareketcesidi: '',
       siparisno: '',
+      satisyeri: '',
       adet: 0,
     };
   }
@@ -71,7 +82,7 @@ class HomeScreen extends Component {
     let buffertext = '';
     //this.setState({bufferimage: ''});
 
-    let options = {port: 8888, host: '192.168.40.4', timeout: 1000};
+    let options = {port: 8888, host: '192.168.89.208', timeout: 1000};
 
     const client = TcpSocket.createConnection(options, () => {
       // Write on the socket
@@ -158,6 +169,7 @@ class HomeScreen extends Component {
           hareketadi: this.state.hareketcesidi,
           siparisno: '',
           adet: this.state.adet,
+          satisyeri: this.state.satisyeri,
         }),
       );
       this.sendwifikurallardata(list, this);
@@ -198,6 +210,23 @@ class HomeScreen extends Component {
     } else alert('Bir Hareket Seçmeden Barkodları Aktaramazsınız!');
   };
 
+  toggleSatisyeriOverlay = () => {
+    this.setState({
+      overlaystatus: false,
+    });
+
+    if (this.state.satisyeri == 'Trendyol') {
+      this.setState({overlaysiparisstatus: true});
+    } else {
+      this.toggleOverlay();
+    }
+  };
+  toggleOverlaySatisYeriBackdrop = () => {
+    this.setState({
+      overlaysatisyeristatus: !this.state.overlaysatisyeristatus,
+      satisyeri: '',
+    });
+  };
   toggleOverlayBackdrop = () => {
     this.setState({
       overlaystatus: !this.state.overlaystatus,
@@ -225,6 +254,40 @@ class HomeScreen extends Component {
     return (
       <SafeAreaProvider>
         <Overlay
+          isVisible={this.state.overlaysatisyeristatus}
+          onBackdropPress={this.toggleOverlaySatisYeriBackdrop}>
+          <Text style={styles.textSecondary}>Satış Yerini Seçiniz</Text>
+
+          <View>
+            <SelectDropdown
+              defaultButtonText="Satış Yerini Seçiniz"
+              data={hareketlersayisyeri}
+              onSelect={(selectedItem, index) => {
+                this.setState({satisyeri: selectedItem});
+              }}
+              buttonTextAfterSelection={(selectedItem, index) => {
+                // text represented after item is selected
+                // if data array is an array of objects then return selectedItem.property to render after item is selected
+                return selectedItem;
+              }}
+            />
+
+            <Button
+              icon={
+                <Icon
+                  name="wrench"
+                  type="font-awesome"
+                  color="white"
+                  size={25}
+                  iconStyle={{marginRight: 10}}
+                />
+              }
+              title="Tamam"
+              onPress={this.toggleSatisyeriOverlay}
+            />
+          </View>
+        </Overlay>
+        <Overlay
           isVisible={this.state.overlaystatus}
           onBackdropPress={this.toggleOverlayBackdrop}>
           <Text style={styles.textSecondary}>Hareket Seç</Text>
@@ -236,7 +299,10 @@ class HomeScreen extends Component {
               onSelect={(selectedItem, index) => {
                 this.setState({hareketcesidi: selectedItem});
                 if (selectedItem == 'Müşteri') {
-                  this.setState({overlaysiparisstatus: true});
+                  this.setState({
+                    overlaysatisyeristatus: true,
+                    overlaystatus: false,
+                  });
                 } else this.setState({overlaysiparisstatus: false});
               }}
               buttonTextAfterSelection={(selectedItem, index) => {
