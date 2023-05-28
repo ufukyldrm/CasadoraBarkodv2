@@ -35,14 +35,17 @@ import AuthStore from '../Stores/AuthStore';
 import SelectDropdown from 'react-native-select-dropdown';
 import TcpSocket from 'react-native-tcp-socket';
 
-const hareketler = ['Depo', 'Müşteri', 'Fuar'];
+const hareketler = ['Depo', 'Satış', 'Faturasız Çıkış'];
 
 const hareketlersayisyeri = [
   'Trendyol',
   'Amazon',
   'Casadora',
   'Miela',
+  'Hipicon',
   'Küçüker',
+  'Bonaliva',
+  'Hepsi_Burada',
   'Diğer',
 ];
 
@@ -82,7 +85,7 @@ class HomeScreen extends Component {
     let buffertext = '';
     //this.setState({bufferimage: ''});
 
-    let options = {port: 8888, host: '192.168.89.208', timeout: 1000};
+    let options = {port: 8888, host: '192.168.40.4', timeout: 1000};
 
     const client = TcpSocket.createConnection(options, () => {
       // Write on the socket
@@ -129,7 +132,7 @@ class HomeScreen extends Component {
         } else if (buffertext.includes('tez')) {
           alert('Barkod hareketi tamamlanmıştır. Siparişler doğrudur.');
         } else {
-          if (barkodhareketlist[0].hareketadi == 'Müşteri') {
+          if (barkodhareketlist[0].hareketadi == 'Satış') {
             alert(
               'Bu siparişteki ürünler seçilen ürünlerle aynı değil, lütfen barkodlardaki ürün ile siparişteki ürünleri kontrol ediniz!!.',
             );
@@ -161,6 +164,11 @@ class HomeScreen extends Component {
     if (this.state.hareketcesidi != '') {
       var list = [];
 
+      this.setState({
+        satisyeri:
+          this.state.hareketcesidi == 'Satış' ? this.state.satisyeri : '',
+      });
+
       AuthStore.barcoded.map((t, index) =>
         list.push({
           barkodid: t[0],
@@ -179,7 +187,8 @@ class HomeScreen extends Component {
       this.setState({
         siparisno: '',
         hareketcesidi: '',
-        overlaystatus: !this.state.overlaystatus,
+        overlaystatus: false,
+        satisyeri: '',
       });
     } else alert('Bir Hareket Seçmeden Barkodları Aktaramazsınız!');
   };
@@ -195,6 +204,7 @@ class HomeScreen extends Component {
           hareketadi: this.state.hareketcesidi,
           siparisno: this.state.siparisno,
           adet: 1,
+          satisyeri: this.state.satisyeri,
         }),
       );
 
@@ -204,7 +214,7 @@ class HomeScreen extends Component {
       this.setState({
         siparisno: '',
         hareketcesidi: '',
-        overlaystatus: !this.state.overlaystatus,
+        overlaystatus: false,
         overlaysiparisstatus: !this.state.overlaysiparisstatus,
       });
     } else alert('Bir Hareket Seçmeden Barkodları Aktaramazsınız!');
@@ -213,6 +223,7 @@ class HomeScreen extends Component {
   toggleSatisyeriOverlay = () => {
     this.setState({
       overlaystatus: false,
+      overlaysatisyeristatus: false,
     });
 
     if (this.state.satisyeri == 'Trendyol') {
@@ -298,7 +309,7 @@ class HomeScreen extends Component {
               data={hareketler}
               onSelect={(selectedItem, index) => {
                 this.setState({hareketcesidi: selectedItem});
-                if (selectedItem == 'Müşteri') {
+                if (selectedItem == 'Satış') {
                   this.setState({
                     overlaysatisyeristatus: true,
                     overlaystatus: false,
