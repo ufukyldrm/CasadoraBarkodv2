@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import {View, Text, LogBox} from 'react-native';
-import LoginPage from './Screens/BarkodScreenSecond';
+import BarkodScreenSecond from './Screens/BarkodScreenSecond';
+import BarkodScreenFirst from './Screens/BarkodScreenFirst';
+import BarkodScreenTemp from './Screens/BarkodScreenTemp';
 import HomesPage from './Screens/HomeScreen';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
@@ -20,8 +22,14 @@ function HomeScreen({navigation}) {
 
   return <HomesPage></HomesPage>;
 }
-function LoginScreen() {
-  return <LoginPage></LoginPage>;
+function XrayBarkod() {
+  return <BarkodScreenFirst></BarkodScreenFirst>;
+}
+function CameraBarkod() {
+  return <BarkodScreenSecond></BarkodScreenSecond>;
+}
+function TempBarkod() {
+  return <BarkodScreenTemp></BarkodScreenTemp>;
 }
 
 class App extends Component {
@@ -38,7 +46,9 @@ class App extends Component {
         <Stack.Navigator
           initialRouteName="anasayfa"
           screenOptions={{headerShown: false}}>
-          <Stack.Screen name="barkod" component={LoginScreen} />
+          <Stack.Screen name="temp" component={TempBarkod} />
+          <Stack.Screen name="barkod2" component={CameraBarkod} />
+          <Stack.Screen name="barkod" component={XrayBarkod} />
           <Stack.Screen name="anasayfa" component={HomeScreen} />
         </Stack.Navigator>
       </NavigationContainer>

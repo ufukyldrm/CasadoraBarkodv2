@@ -23,6 +23,9 @@ export default class BarkodScreenSecond extends Component {
   }
 
   onBarCodeRead(res) {
+
+
+   
     if (
       1440 / 2 + 200 >
         (Number(res.bounds.origin[1].y) + Number(res.bounds.origin[2].y)) / 2 &&
@@ -77,6 +80,7 @@ export default class BarkodScreenSecond extends Component {
 
   render() {
     return (
+
       <View style={{flex: 1}}>
         <BarcodeScanner
           Title={''}
@@ -105,9 +109,10 @@ export default class BarkodScreenSecond extends Component {
             </TouchableOpacity>
           </View>
         ) : (
-          <Text>''</Text>
+<Text>''</Text>
         )}
       </View>
+   
     );
   }
 }

@@ -35,7 +35,7 @@ import AuthStore from '../Stores/AuthStore';
 import SelectDropdown from 'react-native-select-dropdown';
 import TcpSocket from 'react-native-tcp-socket';
 
-const hareketler = ['Depo', 'Satış', 'Faturasız Çıkış'];
+const hareketler = ['Depo', 'Satış', 'Faturasız Çıkış','İade'];
 
 const hareketlersayisyeri = [
   'Trendyol',
@@ -44,6 +44,7 @@ const hareketlersayisyeri = [
   'Miela',
   'Hipicon',
   'Küçüker',
+  'LCW',
   'Bonaliva',
   'Hepsi_Burada',
   'Diğer',
@@ -53,14 +54,29 @@ const PlaygroundNavigate = () => {
   let navigation = useNavigation();
 
   return (
+
+<View style={{flexDirection:'row'}}>
     <TouchableOpacity
-      style={{marginLeft: 10, flexDirection: 'row'}}
-      onPress={() => navigation.navigate('barkod')}>
-      <Icon type="font-awesome-5" name="qrcode" color="green" />
-      <Text style={{color: 'green'}} h5>
-        Barkod
+      style={{margin:5}}
+      onPress={() => navigation.navigate('barkod2')}>
+      <Icon type="font-awesome-5" name="qrcode" color="blue" />
+      <Text style={{color: 'blue'}} h5>
+        QR Code
       </Text>
     </TouchableOpacity>
+    <TouchableOpacity
+       style={{margin:5}}
+      onPress={() => navigation.navigate('barkod')}>
+      <Icon type="font-awesome-5" name="x-ray" color="green" />
+      <Text style={{color: 'green'}} h5>
+        Kızıl
+      </Text>
+    </TouchableOpacity>
+</View>
+
+
+
+
   );
 };
 
@@ -74,18 +90,26 @@ class HomeScreen extends Component {
       overlaystatus: false,
       overlaysiparisstatus: false,
       overlaysatisyeristatus: false,
+      iadeoverlaysatisyeristatus:false,
       hareketcesidi: '',
       siparisno: '',
       satisyeri: '',
       adet: 0,
     };
+
+/*
+for(var i=60000;i<60001;i++)
+AuthStore.UpdatedBarkodList([i, "8698372100040", "SurferCrap", '']);
+*/
+
+
   }
 
   sendwifikurallardata = barkodhareketlist => {
     let buffertext = '';
     //this.setState({bufferimage: ''});
 
-    let options = {port: 8888, host: '192.168.40.4', timeout: 1000};
+    let options = {port: 8888, host: '192.168.40.4', timeout: 10000};
 
     const client = TcpSocket.createConnection(options, () => {
       // Write on the socket
@@ -94,9 +118,10 @@ class HomeScreen extends Component {
         'cassainsertbarkodhareket' + JSON.stringify(barkodhareketlist),
       );
       //  alert(JSON.stringify(barkodhareketlist));
+    
       setTimeout(function () {
         client.destroy();
-      }, 1000);
+      }, 10000);
 
       // Close socket
     });
@@ -159,15 +184,59 @@ class HomeScreen extends Component {
     AuthStore.DeleteItemFromBarkodList(index + 1);
   }
 
+  iadetoggleOverlay = () => {
+
+
+    if (this.state.hareketcesidi != ''&&this.state.satisyeri!='') {
+      var list = [];
+
+ 
+      this.setState({
+        satisyeri:
+          this.state.hareketcesidi == 'İade' ? this.state.satisyeri : '',
+      });
+
+
+
+      AuthStore.barcoded.map((t, index) =>
+        list.push({
+          barkodid: t[0],
+          kucukerkod: t[1],
+          model: t[2],
+          hareketadi: this.state.hareketcesidi,
+          siparisno: '',
+          adet: 1,
+          satisyeri: this.state.satisyeri,
+        })
+      );
+      this.sendwifikurallardata(list, this);
+
+      //AuthStore.SetHareket(list);  internet iptal
+
+      this.setState({
+        siparisno: '',
+        hareketcesidi: '',
+        overlaystatus: false,
+        satisyeri: '',
+      });
+    } else alert('Bir Hareket Seçmeden Barkodları Aktaramazsınız!');
+  };
+
+
+
+
   ///barkodları gönderme butonu
   toggleOverlay = () => {
     if (this.state.hareketcesidi != '') {
       var list = [];
 
+ 
       this.setState({
         satisyeri:
           this.state.hareketcesidi == 'Satış' ? this.state.satisyeri : '',
       });
+
+
 
       AuthStore.barcoded.map((t, index) =>
         list.push({
@@ -192,9 +261,17 @@ class HomeScreen extends Component {
       });
     } else alert('Bir Hareket Seçmeden Barkodları Aktaramazsınız!');
   };
-  toggleSiparisOverlay = () => {
+  toggleSiparisOverlay = () => {      //trendyol Sipariş
     if (this.state.hareketcesidi != '') {
       var list = [];
+
+
+
+      this.setState({
+        satisyeri:
+          'Trendyol'
+      });
+
 
       AuthStore.barcoded.map((t, index) =>
         list.push({
@@ -220,6 +297,31 @@ class HomeScreen extends Component {
     } else alert('Bir Hareket Seçmeden Barkodları Aktaramazsınız!');
   };
 
+
+  toggleİadeSatisyeriOverlay = () => {
+    this.setState({
+      overlaystatus: false,
+      iadeoverlaysatisyeristatus: false,
+    });
+
+    this.iadetoggleOverlay();
+ //ufuk
+  };
+
+
+  iadetoggleSatisyeriOverlay = () => {
+    this.setState({
+      overlaystatus: false,
+      overlaysatisyeristatus: false,
+    });
+
+    if (this.state.satisyeri == 'Trendyol') {
+      this.setState({overlaysiparisstatus: true});
+    } else {
+      this.toggleOverlay();
+    }
+  };
+
   toggleSatisyeriOverlay = () => {
     this.setState({
       overlaystatus: false,
@@ -235,6 +337,12 @@ class HomeScreen extends Component {
   toggleOverlaySatisYeriBackdrop = () => {
     this.setState({
       overlaysatisyeristatus: !this.state.overlaysatisyeristatus,
+      satisyeri: '',
+    });
+  };
+  toggleOverlayIadeSatisYeriBackdrop = () => {
+    this.setState({
+      iadeoverlaysatisyeristatus: !this.state.iadeoverlaysatisyeristatus,
       satisyeri: '',
     });
   };
@@ -264,6 +372,43 @@ class HomeScreen extends Component {
 
     return (
       <SafeAreaProvider>
+    <Overlay
+          isVisible={this.state.iadeoverlaysatisyeristatus}
+          onBackdropPress={this.toggleOverlayIadeSatisYeriBackdrop}>
+          <Text style={styles.textSecondary}>Satış Yerini Seçiniz</Text>
+
+          <View>
+            <SelectDropdown
+              defaultButtonText="İade Satış Yerini Seçiniz"
+              data={hareketlersayisyeri}
+              onSelect={(selectedItem, index) => {
+                this.setState({satisyeri: selectedItem});
+              }}
+              buttonTextAfterSelection={(selectedItem, index) => {
+                // text represented after item is selected
+                // if data array is an array of objects then return selectedItem.property to render after item is selected
+                return selectedItem;
+              }}
+            />
+
+            <Button
+              icon={
+                <Icon
+                  name="wrench"
+                  type="font-awesome"
+                  color="white"
+                  size={25}
+                  iconStyle={{marginRight: 10}}
+                />
+              }
+              title="Tamam"
+              onPress={this.toggleİadeSatisyeriOverlay}
+            />
+          </View>
+        </Overlay>
+
+
+
         <Overlay
           isVisible={this.state.overlaysatisyeristatus}
           onBackdropPress={this.toggleOverlaySatisYeriBackdrop}>
@@ -314,7 +459,14 @@ class HomeScreen extends Component {
                     overlaysatisyeristatus: true,
                     overlaystatus: false,
                   });
-                } else this.setState({overlaysiparisstatus: false});
+                } 
+                else if(selectedItem == 'İade') {
+                  this.setState({
+                    iadeoverlaysatisyeristatus: true,
+                    overlaystatus: false,satisyeri:''
+                  });
+                } 
+                else this.setState({overlaysiparisstatus: false,siparisno:'',adet:1,satisyeri:''});
               }}
               buttonTextAfterSelection={(selectedItem, index) => {
                 // text represented after item is selected

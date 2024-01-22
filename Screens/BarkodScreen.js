@@ -23,11 +23,22 @@ class LoginScreen extends Component {
     this.state = {
       incbarkod: '',
       statereader: false,
+      kızılotesiyleokunanbarkod:''
     };
+
+  
+    
+
+
   }
 
   onSuccess = e => {
     const myArray = e.data.split(' ');
+
+
+
+
+
 
     /*
     AuthStore.UpdatedBarkodList({
@@ -80,6 +91,20 @@ class LoginScreen extends Component {
 
   render() {
     return (
+
+      
+
+      <View>
+      <View style={{flex:2}}>
+          <Input
+            placeholder="1"
+            keyboardType="numeric"
+            textAlign="center"
+            onChangeText={value => this.setState({kızılotesiyleokunanbarkod: value})}
+          />
+      </View>
+
+
       <QRCodeScanner
         ref={node => {
           this.scanner = node;
@@ -106,7 +131,10 @@ class LoginScreen extends Component {
           </Text>
         }
         bottomContent={
+
+          
           this.state.statereader ? (
+
             <TouchableOpacity
               style={styles.buttonTouchable}
               onPress={() => {
@@ -120,10 +148,12 @@ class LoginScreen extends Component {
               <Text style={styles.buttonText}>Diğer Barkoda Geç!</Text>
             </TouchableOpacity>
           ) : (
-            ''
+       ''
           )
         }
       />
+      </View>
+      
     );
   }
 }
